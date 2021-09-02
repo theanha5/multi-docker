@@ -1,0 +1,23 @@
+language: generic
+services:
+  - docker
+
+
+before_install:
+    - docker build -t anhnt2310/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true anhnt2310/react-test npm test
+
+after_success:
+  - docker build -t anhnt2310/multi-client ./client
+  - docker build -t anhnt2310/multi-nginx ./nginx
+  - docker build -t anhnt2310/multi-server ./server
+  - docker build -t anhnt2310/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push anhnt2310/multi-client
+  - docker push anhnt2310/multi-nginx
+  - docker push anhnt2310/multi-server
+  - docker push anhnt2310/multi-worker
